@@ -2,9 +2,9 @@ FUNCTION(create_cmake_config package targets component build_include_dir)
 # Add all targets to the build-tree export set
 export(TARGETS ${targets}
   FILE "${PROJECT_BINARY_DIR}/${package}Targets.cmake" NAMESPACE Voxel::)
-  
+
 string(TOUPPER ${package} UPACKAGE)
- 
+
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
 export(PACKAGE ${package})
@@ -14,7 +14,7 @@ if(WINDOWS)
 elseif(LINUX)
   set(INSTALL_CMAKE_DIR lib/cmake/${package})
 endif()
- 
+
 # Create the FooBarConfig.cmake and FooBarConfigVersion files
 file(RELATIVE_PATH REL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR} "${CMAKE_INSTALL_PREFIX}/include/voxel-${VOXEL_VERSION}")
 # ... for the build tree
@@ -25,19 +25,19 @@ set(CONF_INCLUDE_DIRS "\${${UPACKAGE}_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file("${PROJECT_SOURCE_DIR}/config/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${package}Config.cmake" @ONLY)
 # ... for both
 configure_file("${PROJECT_SOURCE_DIR}/config/${package}ConfigVersion.cmake.in" "${PROJECT_BINARY_DIR}/${package}ConfigVersion.cmake" @ONLY)
- 
+
 # Install the FooBarConfig.cmake and FooBarConfigVersion.cmake
 install(FILES
     "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${package}Config.cmake"
     "${PROJECT_BINARY_DIR}/${package}ConfigVersion.cmake"
   DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT ${component})
-  
+
 # Install the export set for use with the install-tree
 install(EXPORT ${package}Targets
-  DESTINATION ${INSTALL_CMAKE_DIR} 
+  DESTINATION ${INSTALL_CMAKE_DIR}
   NAMESPACE Voxel::
   COMPONENT ${component})
- 
+
 ENDFUNCTION()
 
 
@@ -86,10 +86,14 @@ endfunction()
 
 if(LINUX)
   function(get_distribution_codename codename)
-    read_config(/etc/lsb-release DISTRIB_CODENAME cn)
+    if (EXISTS "/etc/lsb-release")
+      read_config(/etc/lsb-release DISTRIB_CODENAME cn)
+    else ()
+      execute_process(COMMAND lsb_release -s -c OUTPUT_VARIABLE cn)
+    endif ()
     set(${codename} "${cn}" PARENT_SCOPE)
   endfunction()
-  
+
 
   function(create_cpack_config name ver)
     set(CPACK_PACKAGE_VERSION "${ver}")
